@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+streamlit
+nltk
+scikit-learn
+pydantic
+librosa
+matplotlib
+pandas
+openai-whisper
+torch
+mo-sql-parsing
+python-multipart
+pydub
+seaborn
