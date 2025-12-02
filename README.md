@@ -4,11 +4,11 @@ Sistema recomendador de canciones
 
 1. Activar entorno virtual (opcional)
 ```shell
-conda create -n p2_bd2 python=3.10 -y
+conda create -n p2_bd_multimodal python=3.10 -y
 ```
 
 ```shell
-conda activate p2_bd2
+conda activate p2_bd_multimodal
 ```
 
 2. Instalar dependencias
