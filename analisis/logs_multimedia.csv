@@ -1,0 +1,11 @@
+metodo,tiempo_respuesta
+KNN-secuencial,13126.13
+KNN-Indexado,2780.25
+KNN-secuencial,5332.42
+KNN-Indexado,1950.08
+KNN-secuencial,1549.22
+KNN-Indexado,1388.15
+KNN-secuencial,21279.32
+KNN-Indexado,4216.42
+KNN-secuencial,9608.23
+KNN-Indexado,6333.43
