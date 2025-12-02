@@ -282,10 +282,16 @@ def insert_csv(
     metadata_path = f"data/{table}/metadata.csv"
     df.to_csv(metadata_path, index=False)
 
-    documents = df[used_text].astype(str).tolist()
+#    documents = df[used_text].astype(str).tolist()
     indexer = SPIMIIndexer(f"data/{table}/index.json")
-    indexer.index_documents({i: doc for i, doc in enumerate(documents)}) # {i: doc for i, doc in enumerate(documents)}
-    indexer._save_index()
+    documents = {
+        str(df.loc[i, used_id]): str(df.loc[i, used_text])
+        for i in range(len(df))
+    }
+    indexer.index_documents(documents)
+
+ #   indexer.index_documents({i: doc for i, doc in enumerate(documents)}) # {i: doc for i, doc in enumerate(documents)}
+    #indexer._save_index()
 
     return {
         "message": f"Tabla '{table}' cargada e indexada exitosamente.",
