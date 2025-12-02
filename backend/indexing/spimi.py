@@ -209,63 +209,29 @@ class SPIMIIndexer:
         return files[0]
 
     def _merge_group(self, group_files, output_path):
-        """
-        Funde k bloques ordenados (group_files) en un solo bloque ordenado.
-
-        Cada bloque es un dict JSON: term -> [(doc_id, tf), ...]
-        Estrategia: external k-way merge con heap mínimo.
-        """
-        # Preparamos iteradores ordenados por término para cada bloque
-        block_iters = []
+        # cargar bloques como mapas
+        blocks = []
         for path in group_files:
             with open(path, "r", encoding="utf-8") as f:
-                block_dict = json.load(f)
-            items = iter(sorted(block_dict.items(), key=lambda x: x[0]))
-            try:
-                first = next(items)
-            except StopIteration:
-                first = None
-            block_iters.append({"iter": items, "current": first})
+                blocks.append(json.load(f))
 
-        # Heap: (term, idx_block, postings_list)
-        heap = []
-        for idx, b in enumerate(block_iters):
-            if b["current"] is not None:
-                term, postings = b["current"]
-                heapq.heappush(heap, (term, idx, postings))
-
+        # merge real SPIMI: term → {doc_id: tf}
         merged = {}
 
-        while heap:
-            term, idx, postings = heapq.heappop(heap)
-            merged_postings = list(postings)
-            to_advance = [idx]
+        for block in blocks:
+            for term, postings in block.items():
+                if term not in merged:
+                    merged[term] = postings.copy()
+                else:
+                    for doc_id, tf in postings.items():
+                        merged[term][doc_id] = merged[term].get(doc_id, 0) + tf
 
-            # Tomamos también todos los bloques cuyo término actual sea igual
-            while heap and heap[0][0] == term:
-                _, idx2, postings2 = heapq.heappop(heap)
-                merged_postings.extend(postings2)
-                to_advance.append(idx2)
+        # ordenar términos
+        merged_sorted = dict(sorted(merged.items(), key=lambda x: x[0]))
 
-            # Ordenamos postings por doc_id para ese término
-            merged_postings.sort(key=lambda x: x[0])
-            merged[term] = merged_postings
-
-            # Avanzamos cada bloque que acabamos de consumir
-            for bidx in to_advance:
-                it = block_iters[bidx]["iter"]
-                try:
-                    nxt = next(it)
-                except StopIteration:
-                    nxt = None
-                block_iters[bidx]["current"] = nxt
-                if nxt is not None:
-                    t2, p2 = nxt
-                    heapq.heappush(heap, (t2, bidx, p2))
-
-        # Guardamos el bloque fusionado
+        # guardar
         with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(merged, f)
+            json.dump(merged_sorted, f)
 
     # ---------- Fase 3: calcular TF-IDF y normas a partir del bloque final ----------
 
